@@ -5,7 +5,7 @@ const Goal = require('../models/goal');
 // @route   GET /api/goals
 // @access  Private
 const getGoals = asyncHandler(async (req, res) => {
-  const goals = await Goal.find();
+  const goals = await Goal.find({ user: req.user.id });
   res.status(200).send(goals);
 });
 
@@ -20,6 +20,7 @@ const storeGoal = asyncHandler(async (req, res) => {
 
   const goal = await Goal.create({
     text: req.body.text,
+    user: req.user.id,
   });
 
   res.status(200).send(goal);
@@ -31,9 +32,22 @@ const storeGoal = asyncHandler(async (req, res) => {
 const updateGoal = asyncHandler(async (req, res) => {
   const goal = await Goal.findById(req.params.id);
 
+  // Check if goal exists
   if (!goal) {
     res.status(404);
     throw new Error('Goal not found.');
+  }
+
+  // Check if auth user is set
+  if (!req.user) {
+    res.status(401);
+    throw new Error('User not found');
+  }
+
+  // Check if goal belongs to user
+  if (goal.user.toString() !== req.user.id) {
+    res.status(401);
+    throw new Error('User not authorized');
   }
 
   const updatedGoal = await Goal.findByIdAndUpdate(req.params.id, req.body, {
@@ -50,9 +64,22 @@ const deleteGoal = asyncHandler(async (req, res) => {
   const id = req.params.id;
   const goal = await Goal.findById(id);
 
+  // Check if goal exists
   if (!goal) {
     res.status(404);
     throw new Error('Goal not found.');
+  }
+
+  // Check if auth user is set
+  if (!req.user) {
+    res.status(401);
+    throw new Error('User not found');
+  }
+
+  // Check if goal belongs to user
+  if (goal.user.toString() !== req.user.id) {
+    res.status(401);
+    throw new Error('User not authorized');
   }
 
   await Goal.deleteOne({ _id: id });
