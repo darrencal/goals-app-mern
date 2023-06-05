@@ -1,5 +1,5 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
-import authService, { RegisterData } from './authService';
+import authService, { LoginData, RegisterData } from './authService';
 
 export interface User {
   _id: string;
@@ -47,6 +47,31 @@ export const register = createAsyncThunk<
   }
 });
 
+// Login user
+export const login = createAsyncThunk<User, LoginData, { rejectValue: string }>(
+  'auth/login',
+  async (user: LoginData, thunkApi) => {
+    try {
+      return await authService.login(user);
+    } catch (error: any) {
+      console.log(error);
+
+      const message =
+        (error.response &&
+          error.response.data &&
+          error.response.data.message) ||
+        error.message ||
+        error;
+      return thunkApi.rejectWithValue(message);
+    }
+  }
+);
+
+// Logout
+export const logout = createAsyncThunk('auth/logout', async () => {
+  await authService.logout();
+});
+
 export const authSlice = createSlice({
   name: 'auth',
   initialState,
@@ -72,6 +97,23 @@ export const authSlice = createSlice({
         state.isLoading = false;
         state.isError = true;
         state.message = action.payload ?? 'An error occurred';
+        state.user = null;
+      })
+      .addCase(login.pending, (state) => {
+        state.isLoading = true;
+      })
+      .addCase(login.fulfilled, (state, action) => {
+        state.isLoading = false;
+        state.isSuccess = true;
+        state.user = action.payload;
+      })
+      .addCase(login.rejected, (state, action) => {
+        state.isLoading = false;
+        state.isError = true;
+        state.message = action.payload ?? 'An error occurred';
+        state.user = null;
+      })
+      .addCase(logout.fulfilled, (state) => {
         state.user = null;
       });
   },

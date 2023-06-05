@@ -8,6 +8,11 @@ export interface RegisterData {
   password: string;
 }
 
+export interface LoginData {
+  email: string;
+  password: string;
+}
+
 const axiosClient = axios.create({
   baseURL: 'http://localhost:5000',
 });
@@ -22,8 +27,24 @@ const register = async (registerData: RegisterData) => {
   return res.data;
 };
 
+const login = async (loginData: LoginData) => {
+  const res = await axiosClient.post(`${API_URL}/login`, loginData);
+
+  if (res.data) {
+    localStorage.setItem('mygoals_user', JSON.stringify(res.data));
+  }
+
+  return res.data;
+};
+
+const logout = async () => {
+  localStorage.removeItem('mygoals_user');
+};
+
 const authService = {
   register,
+  login,
+  logout,
 };
 
 export default authService;
