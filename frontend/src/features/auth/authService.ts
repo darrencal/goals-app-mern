@@ -1,4 +1,4 @@
-import axios from 'axios';
+import axiosClient from '../../utils/axiosClient';
 
 const API_URL = '/api/auth';
 
@@ -12,10 +12,6 @@ export interface LoginData {
   email: string;
   password: string;
 }
-
-const axiosClient = axios.create({
-  baseURL: 'http://localhost:5000',
-});
 
 const register = async (registerData: RegisterData) => {
   const res = await axiosClient.post(`${API_URL}/register`, registerData);

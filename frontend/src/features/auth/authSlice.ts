@@ -37,8 +37,6 @@ export const register = createAsyncThunk<
   try {
     return await authService.register(user);
   } catch (error: any) {
-    console.log(error);
-
     const message =
       (error.response && error.response.data && error.response.data.message) ||
       error.message ||
@@ -54,8 +52,6 @@ export const login = createAsyncThunk<User, LoginData, { rejectValue: string }>(
     try {
       return await authService.login(user);
     } catch (error: any) {
-      console.log(error);
-
       const message =
         (error.response &&
           error.response.data &&
