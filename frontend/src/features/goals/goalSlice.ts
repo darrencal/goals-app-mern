@@ -2,9 +2,11 @@ import { createAsyncThunk, createSlice } from '@reduxjs/toolkit';
 import goalService, { GoalData } from './goalService';
 import { RootState } from '../../app/store';
 
-interface Goal {
+export interface Goal {
   _id: string;
   text: string;
+  createdAt: string;
+  updatedAt: string;
 }
 
 interface GoalState {
