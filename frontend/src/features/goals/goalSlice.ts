@@ -43,6 +43,7 @@ export const createGoal = createAsyncThunk<
   }
 });
 
+// Get user goals
 export const getGoals = createAsyncThunk<
   Goal[],
   undefined,
@@ -51,6 +52,24 @@ export const getGoals = createAsyncThunk<
   try {
     const token = thunkApi.getState().auth?.user?.token ?? '';
     return await goalService.getGoals(token);
+  } catch (error: any) {
+    const message =
+      (error.response && error.response.data && error.response.data.message) ||
+      error.message ||
+      error;
+    return thunkApi.rejectWithValue(message);
+  }
+});
+
+// Delete a goal
+export const deleteGoal = createAsyncThunk<
+  { id: string },
+  string,
+  { state: RootState; rejectValue: string }
+>('goals/delete', async (goalId: string, thunkApi) => {
+  try {
+    const token = thunkApi.getState().auth?.user?.token ?? '';
+    return await goalService.deleteGoal(goalId, token);
   } catch (error: any) {
     const message =
       (error.response && error.response.data && error.response.data.message) ||
@@ -92,6 +111,21 @@ export const goalSlice = createSlice({
         state.goals = action.payload;
       })
       .addCase(getGoals.rejected, (state, action) => {
+        state.isLoading = false;
+        state.isError = true;
+        state.message = action.payload ?? 'An error occurred';
+      })
+      .addCase(deleteGoal.pending, (state) => {
+        state.isLoading = true;
+      })
+      .addCase(deleteGoal.fulfilled, (state, action) => {
+        state.isLoading = false;
+        state.isSuccess = true;
+        state.goals = state.goals.filter(
+          (goal) => goal._id !== action.payload.id
+        );
+      })
+      .addCase(deleteGoal.rejected, (state, action) => {
         state.isLoading = false;
         state.isError = true;
         state.message = action.payload ?? 'An error occurred';
